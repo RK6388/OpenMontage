@@ -614,7 +614,12 @@ class AudioMixer(BaseTool):
                     f"atrim=duration={target},asetpts=PTS-STARTPTS[speech_key]"
                 )
             else:
-                filter_parts.append("[speech_all]asplit=2[speech_key][speech_out]")
+                # sidechaincompress stops at the first EOF on either input, so
+                # an unpadded key truncates the music bed at the end of the
+                # last narration line. An endless silent pad on the key lets
+                # the music input decide when the ducked stream ends.
+                filter_parts.append("[speech_all]asplit=2[speech_key_raw][speech_out]")
+                filter_parts.append("[speech_key_raw]apad[speech_key]")
 
             # Mix music tracks together
             music_start = len(speech_tracks)
